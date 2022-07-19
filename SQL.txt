@@ -1,0 +1,35 @@
+REPORT ZS013_TASK02.
+
+CLASS gc_main DEFINITION.
+  PUBLIC SECTION.
+    CLASS-METHODS:
+      main IMPORTING ir_part TYPE REF TO data .
+ENDCLASS.
+
+CLASS gc_main IMPLEMENTATION.
+  METHOD main.
+    FIELD-SYMBOLS <ir_part> TYPE ANY TABLE.
+    ASSIGN ir_part->* TO <ir_part>.
+    IF sy-subrc = 0.
+*      SELECT COUNT( DISTINCT name_first )
+      SELECT DISTINCT name_first , COUNT( * ) as cnt
+      INTO TABLE @DATA(lt_but)
+      FROM zt001_but000
+      UP TO 10 ROWS
+*      WHERE mc_name1 <> '' and partner in @<ir_part>
+      WHERE partner in @<ir_part>
+      GROUP BY name_first
+      ORDER BY cnt DESCENDING
+      .
+    ENDIF.
+    cl_demo_output=>write( data = lt_but ).
+    cl_demo_output=>display( ).
+  ENDMETHOD.
+ENDCLASS.
+
+DATA gv_partner TYPE but000-partner.
+SELECT-OPTIONS so_part FOR gv_partner .
+
+
+START-OF-SELECTION.
+  gc_main=>main( ir_part = REF #( so_part[] ) ).

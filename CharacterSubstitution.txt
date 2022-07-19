@@ -1,0 +1,17 @@
+TYPES: BEGIN OF tsy_nv,
+         name  TYPE text30,
+         value TYPE string,
+       END OF tsy_nv.
+
+DATA: gt_nv     TYPE TABLE OF tsy_nv,
+      gv_text   TYPE string,
+      gt_return TYPE bapiret2_tab.
+
+gt_nv = VALUE #( ( name = 'V1' value = 'Herr Schmitt' )
+( name = 'V2' value = 'Herr und Frau Schmitt' )
+( name = 'V3' value = '++++' )
+( name = 'V7' value = '17' ) ).
+
+LOOP AT gt_nv into data(it_nv).
+  write it_nv-value.
+ENDLOOP.

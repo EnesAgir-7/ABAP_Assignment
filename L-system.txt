@@ -1,0 +1,77 @@
+REPORT TASK06.
+
+CLASS lsys DEFINITION.
+  PUBLIC SECTION.
+    TYPES: BEGIN OF rule,
+             input  TYPE string,
+             output TYPE string,
+           END OF rule.
+    TYPES: rulestab TYPE STANDARD TABLE OF rule WITH EMPTY KEY.
+    CLASS-METHODS main IMPORTING iterations TYPE i DEFAULT 10.
+ENDCLASS.
+
+CLASS lsys IMPLEMENTATION.
+  METHOD main.
+
+    DATA(axiom) = `A`.
+    DATA(alphabet) = `AB`.
+    DATA(rules) = VALUE rulestab( ( input = `B` output = `A` ) ( input = `A` output = `AB` ) ).
+
+APPEND VALUE #( input = 'AB' output = 'ABA' ) TO rules.
+
+data : offset type i value 0, lngth type i.
+
+data(xy) = 'ABA'.
+data outpt type string.
+
+data num type i.
+num = iterations - 2.
+do  num times.
+
+  lngth = lines( rules ).
+  data(inpt) = rules[ lngth ]-output.
+  data(st_lng) = strlen( inpt ).
+
+  do st_lng times.
+
+    if inpt+offset(1) = 'A'.
+      outpt = outpt && 'AB' .
+    ENDIF.
+
+    if inpt+offset(1) = 'B'.
+      outpt = outpt && 'A'.
+    Endif.
+
+    offset  = offset + 1.
+
+  Enddo.
+
+offset = 0.
+APPEND VALUE #( input = inpt output = outpt ) TO rules.
+outpt = ''.
+ENDDO.
+
+data : ab type i value 1, otpt type string, x type i value 0.
+
+loop at rules into data(temp).
+  write :/ | { 'n = ' }{ x }{ ' : ' } { rules[ ab ]-output } | .
+  x = x + 1.
+  ab = ab + 1.
+ENDLOOP.
+
+    "excpected output:
+    "n = 0 : A       1
+    "n = 1 : AB      2
+    "n = 2 : ABA     3
+    "n = 3 : ABAAB   5
+    "n = 4 : ABAABABA    8
+    "n = 5 : ABAABABAABAAB 13
+    "n = 6 : ABAABABAABAABABAABABA 21
+    "n = 7 : ABAABABAABAABABAABABAABAABABAABAAB 34
+  ENDMETHOD.
+ENDCLASS.
+
+PARAMETERS p_cnt TYPE i DEFAULT 10.
+
+START-OF-SELECTION.
+lsys=>main( iterations = p_cnt ).

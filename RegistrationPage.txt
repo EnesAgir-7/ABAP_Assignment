@@ -1,0 +1,109 @@
+REPORT ZS013_ASSIGNEMENT03.
+
+PARAMETERS id   TYPE ZS016TABW2ASN-id.
+
+PARAMETERS name   TYPE ZS016TABW2ASN-name.
+PARAMETERS address TYPE ZS016TABW2ASN-address.
+PARAMETERS TelNum TYPE ZS016TABW2ASN-telephone_number.
+PARAMETERS rating TYPE ZS016TABW2ASN-rating.
+PARAMETERS comments TYPE ZS016TABW2ASN-comments.
+"DATA lang   TYPE ZS016TABW2ASN-language.
+
+
+SELECTION-SCREEN :
+                  PUSHBUTTON /10(10) INSERT  USER-COMMAND ADD,
+                  PUSHBUTTON 25(10) DELETE USER-COMMAND DEL,
+                  PUSHBUTTON 35(10) UPDATE USER-COMMAND UPD,
+                  PUSHBUTTON 45(10) VIEW USER-COMMAND VIEW.
+ INITIALIZATION.
+  SET TITLEBAR 'Registration Page'.
+  insert = 'insert'.
+  delete = 'delete'.
+  UPDATE = 'update'.
+  view = 'view'.
+
+  DATA: it_fieldcat  TYPE slis_t_fieldcat_alv,
+        wa_fieldcat  TYPE slis_fieldcat_alv.
+
+  wa_fieldcat-fieldname  = 'ID'.    " Fieldname in the data table
+  wa_fieldcat-seltext_m  = 'ID'.   " Column description in the output
+  APPEND wa_fieldcat TO it_fieldcat.
+
+  wa_fieldcat-fieldname  = 'Name'.
+  wa_fieldcat-seltext_m  = 'Name'.
+  APPEND wa_fieldcat TO it_fieldcat.
+
+  wa_fieldcat-fieldname  = 'telephone_number'.
+  wa_fieldcat-seltext_m  = 'telephone_number'.
+  APPEND wa_fieldcat TO it_fieldcat.
+
+  wa_fieldcat-fieldname  = 'rating'.
+  wa_fieldcat-seltext_m  = 'rating'.
+  APPEND wa_fieldcat TO it_fieldcat.
+
+  wa_fieldcat-fieldname  = 'comments'.
+  wa_fieldcat-seltext_m  = 'comments'.
+  APPEND wa_fieldcat TO it_fieldcat.
+
+START-OF-SELECTION.
+
+
+AT SELECTION-SCREEN.
+  CASE sy-ucomm.
+    WHEN 'ADD'.
+
+      DATA gs_tab1 TYPE ZS016TABW2ASN.
+      gs_tab1-id = id.
+      gs_tab1-name = name.
+      gs_tab1-address = address.
+      gs_tab1-telephone_number = TelNum.
+      gs_tab1-rating = rating.
+      gs_tab1-comments = comments.
+      "gs_tab1-language = lang.
+
+      "WRITE sy-langu TO gs_tab1-language.
+
+      INSERT ZS016TABW2ASN FROM gs_tab1.
+    WHEN 'DEL'.
+      DELETE FROM ZS016TABW2ASN
+
+      WHERE id = @id.
+      SELECT * "DISTINCT name_first , COUNT( * ) as cnt
+      INTO TABLE @DATA(ldt_but)
+      FROM ZS016TABW2ASN.
+        cl_demo_output=>write( data = ldt_but ).
+        cl_demo_output=>display( ).
+
+    WHEN 'VIEW'.
+      SELECT * "DISTINCT name_first , COUNT( * ) as cnt
+      INTO TABLE @DATA(lt_but)
+      FROM ZS016TABW2ASN.
+*        cl_demo_output=>write( data = lt_but ).
+*       cl_demo_output=>display( ).
+
+      CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY'
+          EXPORTING
+            it_fieldcat   = it_fieldcat
+          TABLES
+            t_outtab      = lt_but
+          EXCEPTIONS
+            program_error = 1
+            OTHERS        = 2.
+    WHEN 'UPD'.
+      UPDATE ZS016TABW2ASN set  name = @name,
+                                address = @address,
+                                TELEPHONE_NUMBER = @TelNum,
+                                rating = @rating,
+                                comments = @comments
+                                WHERE id = @id.
+      SELECT * "DISTINCT name_first , COUNT( * ) as cnt
+      INTO TABLE @DATA(lut_but)
+      FROM ZS016TABW2ASN
+        WHERE id = @id.
+        cl_demo_output=>write( data = lut_but ).
+        cl_demo_output=>display( ).
+  ENDCASE.
+
+  IF sy-subrc = 0.
+    COMMIT WORK.
+  ENDIF.

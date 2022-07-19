@@ -1,0 +1,71 @@
+REPORT ZS013_TASK01.
+
+PARAMETERS p_num TYPE i DEFAULT 1.
+*& values: 1000=M, 100=C, 10=X, 1=I, 500=D, 50=L, 5=V
+
+START-OF-SELECTION.
+
+  IF p_num > 3000 OR p_num < 0 .
+    WRITE: / |the number { p_num } is not in the allowed range (0-3000)|.
+    RETURN.
+  ENDIF.
+
+  DATA gv_digit TYPE i.
+  DATA gv_roman TYPE string.
+  DATA gv_num TYPE i.
+  DATA gv_romone TYPE string.
+  DATA gv_romfive TYPE string.
+  DATA gv_romten TYPE string.
+
+  gv_num = p_num.
+
+  DATA(gv_potenz) = 1.
+  WHILE gv_num > 0.
+
+    CASE gv_potenz.
+      WHEN 1. "the 1
+        gv_romone = 'I'.
+        gv_romfive = 'V'.
+        gv_romten = 'X'.
+      WHEN 2. "the 10
+        gv_romone = 'X'.
+        gv_romfive = 'L'.
+        gv_romten = 'C'.
+      WHEN 3. "the 100
+        gv_romone = 'C'.
+        gv_romfive = 'D'.
+        gv_romten = 'M'.
+      WHEN 4.                                               "the 1000
+        gv_romone = 'M'.
+      WHEN OTHERS.
+    ENDCASE.
+
+    gv_digit = gv_num MOD 10.
+    gv_num = gv_num DIV 10.
+    gv_potenz = gv_potenz + 1.
+
+    CASE gv_digit.
+      WHEN 1 .
+        gv_roman = |{ gv_romone }{ gv_roman }|.
+      WHEN 2 .
+        gv_roman = |{ gv_romone }{ gv_romone }{ gv_roman }|.
+      WHEN 3.
+        gv_roman = |{ gv_romone }{ gv_romone }{ gv_romone }{ gv_roman }|.
+      WHEN 4.
+        gv_roman = |{ gv_romone }{ gv_romfive }{ gv_roman }|.
+      WHEN 5.
+        gv_roman = |{ gv_romfive }{ gv_roman }|.
+      WHEN 6 .
+        gv_roman = |{ gv_romfive }{ gv_romone }{ gv_roman }|.
+      WHEN 7 .
+        gv_roman = |{ gv_romfive }{ gv_romone }{ gv_romone }{ gv_roman }|.
+      WHEN 8.
+        gv_roman = |{ gv_romfive }{ gv_romone }{ gv_romone }{ gv_romone }{ gv_roman }|.
+      WHEN 9.
+        gv_roman = |{ gv_romone }{ gv_romten }{ gv_roman }|.
+      WHEN OTHERS.
+    ENDCASE.
+
+  ENDWHILE.
+
+  WRITE: / |the arabic numer { p_num } is the { gv_roman } roman number|.

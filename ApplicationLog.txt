@@ -1,0 +1,77 @@
+PARAMETERS p_cnt TYPE i DEFAULT 10.
+
+
+CLASS gc_main DEFINITION.
+  PUBLIC SECTION.
+  CLASS-METHODS:
+      main IMPORTING iv_cnt TYPE i.
+
+ENDCLASS.
+
+
+CLASS gc_main IMPLEMENTATION.
+  METHOD main.
+    DATA i_s_log TYPE bal_s_log.
+    DATA e_log_handle TYPE balloghndl.
+
+    i_s_log-object = 'ZS013'.
+    i_s_log-subobject = 'ZSS013'.
+  CALL FUNCTION 'BAL_LOG_CREATE'
+    EXPORTING
+      i_s_log                 = i_s_log
+    IMPORTING
+      e_log_handle            = e_log_handle
+    EXCEPTIONS
+      log_header_inconsistent = 1
+      OTHERS                  = 2.
+  IF sy-subrc <> 0.
+    WRITE 'error'.
+  ENDIF.
+
+  DO iv_cnt TIMES.
+    MESSAGE e000(ZS013_TASK04) WITH 'task04 log test' INTO DATA(lv_dummy).
+    .
+    data i_s_msg TYPE bal_s_msg.
+
+    MOVE-CORRESPONDING sy TO i_s_msg.
+
+    CALL FUNCTION 'BAL_LOG_MSG_ADD'
+      EXPORTING
+        i_log_handle     = e_log_handle
+        i_s_msg          = i_s_msg
+      EXCEPTIONS
+        log_not_found    = 1
+        msg_inconsistent = 2
+        log_is_full      = 3
+        OTHERS           = 4.
+    IF sy-subrc <> 0.
+      WRITE 'error message add'.
+    ENDIF.
+
+  ENDDO.
+
+  DATA i_t_log_handle TYPE bal_t_logh.
+  INSERT e_log_handle INTO TABLE i_t_log_handle.
+  CALL FUNCTION 'BAL_DB_SAVE'
+    EXPORTING
+      i_t_log_handle   = i_t_log_handle
+    EXCEPTIONS
+      log_not_found    = 1
+      save_not_allowed = 2
+      numbering_error  = 3
+      OTHERS           = 4.
+  IF sy-subrc <> 0.
+    WRITE 'error log save'.
+  ELSE.
+    WRITE 'no error during log save'.
+  ENDIF.
+
+  "here: persist data in database
+  COMMIT WORK. "COMMIT WORK. -> "LUW"
+  LEAVE PROGRAM.
+
+  ENDMETHOD.
+  ENDCLASS.
+
+START-OF-SELECTION.
+  gc_main=>main( iv_cnt = p_cnt ).

@@ -1,0 +1,31 @@
+REPORT ZASSIGNMENT1.
+
+PARAMETERS : P_INPUT1 TYPE I,
+             P_INPUT2 TYPE I,
+             OPR TYPE C,
+             RESULT TYPE I.
+
+DATA : LV_OUT TYPE I.
+
+AT SELECTION-SCREEN.
+
+
+
+CASE OPR.
+    WHEN '+'.
+      lv_out = P_INPUT1 + P_INPUT2.
+    WHEN '-'.
+      lv_out = P_INPUT1 - P_INPUT2.
+    WHEN '/'.
+      IF ( P_INPUT2 <> 0 ).
+        lv_out = P_INPUT1 / P_INPUT2.
+      ELSE.
+       message  'Cannot Divide a number by 0' TYPE 'E'.
+      ENDIF.
+    WHEN '*'.
+      lv_out = P_INPUT1 * P_INPUT2.
+  ENDCASE.
+
+  result = lv_out.
+
+  START-OF-SELECTION.
